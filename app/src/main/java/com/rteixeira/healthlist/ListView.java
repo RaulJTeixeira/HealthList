@@ -32,7 +32,7 @@ public class ListView extends AppCompatActivity implements Contracts.View {
         setSupportActionBar(toolbar);
 
         mFacilitiesAdapter = new FacilityAdapter(new ArrayList<Facility>(0));
-        setPresenter(new ListPresenter(this, DataRepository.getInstance()));
+        setPresenter(new ListPresenter(this, DataRepository.getInstance(getContext())));
     }
 
     @Override
