@@ -1,8 +1,4 @@
-package com.rteixeira.healthlist.Data;
-
-/**
- * Created by Raul Teixeira on 12/09/2017.
- */
+package com.rteixeira.healthlist.data;
 
 public class Facility {
 }

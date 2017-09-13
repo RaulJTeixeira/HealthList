@@ -1,8 +1,16 @@
-package com.rteixeira.healthlist.Data.source;
+package com.rteixeira.healthlist.data.source;
 
-/**
- * Created by Raul Teixeira on 12/09/2017.
- */
+import com.rteixeira.healthlist.data.Facility;
+import java.util.ArrayList;
 
-public class ListDataSource {
+public interface ListDataSource {
+
+    interface ListDataSourceCallback {
+        void getFacilities(ArrayList<Facility> facilities, boolean isFromInternet);
+        void unableToGetFacilities();
+    }
+
+    void getFacilitiesList(ListDataSourceCallback callback);
 }
+
+

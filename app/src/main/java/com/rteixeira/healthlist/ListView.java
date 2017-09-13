@@ -1,15 +1,28 @@
 package com.rteixeira.healthlist;
 
+import android.content.Context;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 
-public class ListView extends AppCompatActivity {
+import com.rteixeira.healthlist.data.Facility;
+import com.rteixeira.healthlist.data.source.repo.DataRepository;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+
+public class ListView extends AppCompatActivity implements Contracts.View {
+
+    private FacilityAdapter mFacilitiesAdapter;
+    private Contracts.Presenter mPresenter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -18,35 +31,113 @@ public class ListView extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+        mFacilitiesAdapter = new FacilityAdapter(new ArrayList<Facility>(0));
+        setPresenter(new ListPresenter(this, DataRepository.getInstance()));
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        mPresenter.requestFacilities();
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_list_view, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public Context getContext() {
+        return getBaseContext();
+    }
+
+    @Override
+    public void setPresenter(Contracts.Presenter presenter) {
+        mPresenter = presenter;
+    }
+
+    @Override
+    public void setLoadingIndicator(boolean active) {
+
+    }
+
+    @Override
+    public void clearList() {
+
+    }
+
+    @Override
+    public void showLoadingError() {
+
+    }
+
+    @Override
+    public void showFacilitiesList(ArrayList<Facility> facilities, boolean isFromInternet) {
+        mFacilitiesAdapter.setList(facilities);
+        mFacilitiesAdapter.notifyDataSetChanged();
+    }
+
+    private class FacilityAdapter extends BaseAdapter {
+
+        private List<Facility> mFacilities;
+
+        private FacilityAdapter(List<Facility> facilities) {
+            setList(facilities);
+        }
+
+        private void setList(List<Facility> facilities) {
+            mFacilities = checkNotNull(facilities);
+        }
+
+        class ViewHolder {
+            //CheckedTextView checkedTextView;
+        }
+
+        @Override
+        public int getCount() {
+            return mFacilities.size();
+        }
+
+        @Override
+        public Facility getItem(int i) {
+            return mFacilities.get(i);
+        }
+
+        @Override
+        public long getItemId(int i) {
+            return i;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            ViewHolder viewHolder;
+
+            if (convertView == null) {
+                convertView = LayoutInflater.from(getContext()).inflate(R.layout.facility_item, parent, false);
+                viewHolder = new ViewHolder();
+
+                //FindByID for viewHolder items
+
+                convertView.setTag(viewHolder);
+            } else {
+                viewHolder = (ViewHolder) convertView.getTag();
+            }
+
+                // set values
+            return convertView;
+        }
     }
 }
