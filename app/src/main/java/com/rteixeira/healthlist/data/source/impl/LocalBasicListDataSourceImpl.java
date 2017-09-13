@@ -52,7 +52,7 @@ public class LocalBasicListDataSourceImpl implements ListDataSource {
                     }
 
                     reader.close();
-                    callback.getFacilities(result, true);
+                    callback.getFacilities(result, false);
                 } catch (IOException e) {
                     e.printStackTrace();
                     callback.unableToGetFacilities();

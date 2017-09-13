@@ -38,29 +38,33 @@ public class BasicListDataSourceImpl implements ListDataSource {
         @Override
         protected Void doInBackground(ListDataSourceCallback... params) {
 
-            if (params != null && params.length == 1) {
-                ListDataSourceCallback callback = params[0];
-                ArrayList<Facility> result = new ArrayList<>();
-                String line;
-
-                try {
-
-                    URL url = new URL(FILE_URL);
-                    InputStream is = url.openStream();
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-
-                    while ((line = reader.readLine()) != null) {
-                        result.add(new Facility(line));
-                    }
-
-                    reader.close();
-                    is.close();
-                    callback.getFacilities(result, true);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    callback.unableToGetFacilities();
-                }
+            if (params == null && params.length != 1) {
+                return null;
             }
+
+            ListDataSourceCallback callback = params[0];
+            ArrayList<Facility> result = new ArrayList<>();
+            String line;
+
+            try {
+
+                URL url = new URL(FILE_URL);
+                InputStream is = url.openStream();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+
+                while ((line = reader.readLine()) != null) {
+                    result.add(new Facility(line));
+                }
+
+                reader.close();
+                is.close();
+                callback.getFacilities(result, true);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            //TODO Better way to do this (aka not call the instance from here
+            LocalBasicListDataSourceImpl.getInstance().getFacilitiesList(callback);
             return null;
         }
     }
