@@ -1,4 +1,4 @@
-package com.rteixeira.healthlist.data.source.repo;
+package com.rteixeira.healthlist.data;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -22,7 +22,8 @@ public class DataRepository implements ListDataSource {
 
     public static DataRepository getInstance(Context context) {
         if (INSTANCE == null) {
-            INSTANCE = new DataRepository(BasicListDataSourceImpl.getInstance(), LocalBasicListDataSourceImpl.getInstance());
+            INSTANCE = new DataRepository(BasicListDataSourceImpl.getInstance(context),
+                    LocalBasicListDataSourceImpl.getInstance(context));
         }
 
         INSTANCE.mContext = context;
@@ -37,7 +38,6 @@ public class DataRepository implements ListDataSource {
             mLocalDataSource.getFacilitiesList(callback);
         }
     }
-
 
     private boolean isNetworkAvailable() {
         final ConnectivityManager connectivityManager = ((ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE));

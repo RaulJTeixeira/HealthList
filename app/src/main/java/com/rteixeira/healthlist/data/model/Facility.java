@@ -1,4 +1,4 @@
-package com.rteixeira.healthlist.data;
+package com.rteixeira.healthlist.data.model;
 
 
 import android.os.Parcel;
@@ -7,10 +7,10 @@ import android.os.Parcelable;
 /**
  * CSV Fields:
  * OrganisationID	OrganisationCode	OrganisationType	SubType	Sector	OrganisationStatus
- * IsPimsManaged OrganisationName	Address1	Address2	Address3	City	County	Postcode
+ *  OrganisationName    IsPimsManaged	Address1	Address2	Address3	City	County	Postcode
  * Latitude	Longitude	ParentODSCode	ParentName	Phone	Email	Website	Fax
  */
-public class Facility implements Parcelable{
+public class Facility implements Parcelable {
 
     private static final String SEPARATOR = "\t";
 
@@ -22,6 +22,7 @@ public class Facility implements Parcelable{
     private String Sector;
 
     private String OrganisationStatus;
+    private String OrganisationName;
     private String IsPimsManaged;
 
     private String Address1;
@@ -57,20 +58,21 @@ public class Facility implements Parcelable{
             Sector = values[4];
             OrganisationStatus = values[5];
             IsPimsManaged = values[6];
-            Address1 = values[7];
-            Address2 = values[8];
-            Address3 = values[9];
-            City = values[10];
-            County = values[11];
-            Postcode = values[12];
-            Latitude = Double.parseDouble(values[13]);
-            Longitude = Double.parseDouble(values[14]);
-            ParentODSCode = values[15];
-            ParentName = values[16];
-            Phone = values[17];
-            Email = values[18];
-            Website = values[19];
-            Fax = values[20];
+            OrganisationName = values[7];
+            Address1 = values[8];
+            Address2 = values[9];
+            Address3 = values[10];
+            City = values[11];
+            County = values[12];
+            Postcode = values[13];
+            Latitude = values.length > 14 && !values[14].isEmpty() ? Double.parseDouble(values[14]) : Double.NaN;
+            Longitude = values.length > 15 && !values[15].isEmpty() ? Double.parseDouble(values[15]) : Double.NaN;
+            ParentODSCode = values.length > 16 ? values[16] : "";
+            ParentName = values.length > 17 ? values[17] : "";
+            Phone = values.length > 18 ? values[18] : "";
+            Email = values.length > 19 ? values[19] : "";
+            Website = values.length > 20 ? values[20] : "";
+            Fax = values.length > 21 ? values[21] : "";
         }
     }
 
@@ -82,6 +84,7 @@ public class Facility implements Parcelable{
         Sector = in.readString();
         OrganisationStatus = in.readString();
         IsPimsManaged = in.readString();
+        OrganisationName = in.readString();
         Address1 = in.readString();
         Address2 = in.readString();
         Address3 = in.readString();
@@ -124,6 +127,7 @@ public class Facility implements Parcelable{
         dest.writeString(Sector);
         dest.writeString(OrganisationStatus);
         dest.writeString(IsPimsManaged);
+        dest.writeString(OrganisationName);
         dest.writeString(Address1);
         dest.writeString(Address2);
         dest.writeString(Address3);
@@ -306,5 +310,13 @@ public class Facility implements Parcelable{
 
     public void setFax(String fax) {
         Fax = fax;
+    }
+
+    public String getOrganisationName() {
+        return OrganisationName;
+    }
+
+    public void setOrganisationName(String organisationName) {
+        OrganisationName = organisationName;
     }
 }

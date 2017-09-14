@@ -1,9 +1,10 @@
 package com.rteixeira.healthlist.data.source.impl;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 
-import com.rteixeira.healthlist.data.Facility;
+import com.rteixeira.healthlist.data.model.Facility;
 import com.rteixeira.healthlist.data.source.ListDataSource;
 
 import java.io.BufferedReader;
@@ -18,13 +19,18 @@ public class BasicListDataSourceImpl implements ListDataSource {
     private static final String FILE_URL = "https://data.gov.uk/data/resource/nhschoices/Hospital.csv";
     private static BasicListDataSourceImpl INSTANCE;
 
+    private Context mContext;
+
     private BasicListDataSourceImpl() {
     }
 
-    public static BasicListDataSourceImpl getInstance() {
+    public static BasicListDataSourceImpl getInstance(Context context) {
         if (INSTANCE == null) {
             INSTANCE = new BasicListDataSourceImpl();
         }
+
+        INSTANCE.mContext = context;
+
         return INSTANCE;
     }
 
@@ -44,7 +50,6 @@ public class BasicListDataSourceImpl implements ListDataSource {
 
             ListDataSourceCallback callback = params[0];
             ArrayList<Facility> result = new ArrayList<>();
-            String line;
 
             try {
 
@@ -52,19 +57,23 @@ public class BasicListDataSourceImpl implements ListDataSource {
                 InputStream is = url.openStream();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(is));
 
-                while ((line = reader.readLine()) != null) {
-                    result.add(new Facility(line));
-                }
+                String line = reader.readLine();
 
+                if(line != null) {
+                    while ((line = reader.readLine()) != null) {
+                        result.add(new Facility(line));
+                    }
+                }
                 reader.close();
                 is.close();
                 callback.getFacilities(result, true);
+                return null;
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
             //TODO Better way to do this (aka not call the instance from here
-            LocalBasicListDataSourceImpl.getInstance().getFacilitiesList(callback);
+            LocalBasicListDataSourceImpl.getInstance(mContext).getFacilitiesList(callback);
             return null;
         }
     }

@@ -1,10 +1,10 @@
 package com.rteixeira.healthlist.data.source.impl;
 
-import android.content.res.Resources;
+import android.content.Context;
 import android.os.AsyncTask;
 
 import com.rteixeira.healthlist.R;
-import com.rteixeira.healthlist.data.Facility;
+import com.rteixeira.healthlist.data.model.Facility;
 import com.rteixeira.healthlist.data.source.ListDataSource;
 
 import java.io.BufferedReader;
@@ -17,12 +17,17 @@ public class LocalBasicListDataSourceImpl implements ListDataSource {
 
     private static LocalBasicListDataSourceImpl INSTANCE;
 
+    private Context mContext;
+
     private LocalBasicListDataSourceImpl() {}
 
-    public static LocalBasicListDataSourceImpl getInstance() {
+    public static LocalBasicListDataSourceImpl getInstance(Context context) {
         if (INSTANCE == null) {
             INSTANCE = new LocalBasicListDataSourceImpl();
         }
+
+        INSTANCE.mContext = context;
+
         return INSTANCE;
     }
 
@@ -42,15 +47,16 @@ public class LocalBasicListDataSourceImpl implements ListDataSource {
                 ArrayList<Facility> result = new ArrayList<>();
 
                 try {
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(Resources.
-                            getSystem().openRawResource(R.raw.hospital)));
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(
+                            mContext.getResources().openRawResource(R.raw.hospital)));
 
-                    String line;
+                    String line = reader.readLine();
 
-                    while ((line = reader.readLine()) != null) {
-                        result.add(new Facility(line));
+                    if(line != null) {
+                        while ((line = reader.readLine()) != null) {
+                            result.add(new Facility(line));
+                        }
                     }
-
                     reader.close();
                     callback.getFacilities(result, false);
                 } catch (IOException e) {

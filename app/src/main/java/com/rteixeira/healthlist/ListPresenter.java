@@ -1,8 +1,11 @@
 package com.rteixeira.healthlist;
 
-import com.rteixeira.healthlist.data.Facility;
+import android.app.Activity;
+import android.content.Context;
+
+import com.rteixeira.healthlist.data.DataRepository;
+import com.rteixeira.healthlist.data.model.Facility;
 import com.rteixeira.healthlist.data.source.ListDataSource;
-import com.rteixeira.healthlist.data.source.repo.DataRepository;
 
 import java.util.ArrayList;
 
@@ -11,8 +14,14 @@ public class ListPresenter implements Contracts.Presenter {
 
     private Contracts.View mRequestView;
     private DataRepository mRepository;
+    private Context mContext;
 
-    public ListPresenter(Contracts.View requestView, DataRepository repository) {
+    private ArrayList<Facility> saved_facilities;
+
+    private boolean loadedFromInternet = false;
+
+    public ListPresenter(Context context, Contracts.View requestView, DataRepository repository) {
+        this.mContext = context;
         this.mRequestView = requestView;
         this.mRepository = repository;
     }
@@ -23,19 +32,36 @@ public class ListPresenter implements Contracts.Presenter {
         mRequestView.clearList();
         mRequestView.setLoadingIndicator(true);
 
-        mRepository.getFacilitiesList(new ListDataSource.ListDataSourceCallback() {
-            @Override
-            public void getFacilities(ArrayList<Facility> facilities, boolean fromInternet) {
-                mRequestView.showFacilitiesList(facilities, fromInternet);
-                mRequestView.setLoadingIndicator(false);
-            }
+        if (saved_facilities == null || !loadedFromInternet) {
 
-            @Override
-            public void unableToGetFacilities() {
-                mRequestView.setLoadingIndicator(false);
-                mRequestView.showLoadingError();
-            }
-        });
+            mRepository.getFacilitiesList(new ListDataSource.ListDataSourceCallback() {
+                @Override
+                public void getFacilities(final ArrayList<Facility> facilities, final boolean isFromInternet) {
 
+                    ((Activity) mContext).runOnUiThread(new Runnable() {
+                        public void run() {
+
+                            mRequestView.setLoadingIndicator(false);
+                            if (facilities.isEmpty()) {
+                                mRequestView.clearList();
+                                mRequestView.showLoadingError();
+                            } else {
+                                mRequestView.showFacilitiesList(facilities);
+                            }
+                        }
+                    });
+                }
+
+                @Override
+                public void unableToGetFacilities() {
+                    mRequestView.setLoadingIndicator(false);
+                    mRequestView.showLoadingError();
+                }
+            });
+
+        } else {
+            mRequestView.setLoadingIndicator(false);
+            mRequestView.showFacilitiesList(saved_facilities);
+        }
     }
 }

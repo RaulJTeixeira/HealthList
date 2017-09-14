@@ -1,6 +1,6 @@
 package com.rteixeira.healthlist.data.source;
 
-import com.rteixeira.healthlist.data.Facility;
+import com.rteixeira.healthlist.data.model.Facility;
 
 import java.util.ArrayList;
 
@@ -13,5 +13,3 @@ public interface ListDataSource {
 
     void getFacilitiesList(ListDataSourceCallback callback);
 }
-
-
