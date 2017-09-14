@@ -30,6 +30,7 @@ public class ListPresenter implements Contracts.Presenter {
     public void requestFacilities() {
 
         mRequestView.clearList();
+        mRequestView.toggleRetryOption(false);
         mRequestView.setLoadingIndicator(true);
 
         if (saved_facilities == null || !loadedFromInternet) {
@@ -41,13 +42,16 @@ public class ListPresenter implements Contracts.Presenter {
                     ((Activity) mContext).runOnUiThread(new Runnable() {
                         public void run() {
 
-                            mRequestView.setLoadingIndicator(false);
-                            if (facilities.isEmpty()) {
-                                mRequestView.clearList();
-                                mRequestView.showLoadingError();
-                            } else {
-                                mRequestView.showFacilitiesList(facilities);
-                            }
+                        mRequestView.setLoadingIndicator(false);
+                        saved_facilities = facilities;
+                        loadedFromInternet = isFromInternet;
+                        mRequestView.toggleRetryOption(!isFromInternet);
+
+                        if(!isFromInternet) {
+                            mRequestView.showOfflineNotification();
+                        }
+                        mRequestView.showFacilitiesList(facilities);
+
                         }
                     });
                 }
@@ -56,6 +60,7 @@ public class ListPresenter implements Contracts.Presenter {
                 public void unableToGetFacilities() {
                     mRequestView.setLoadingIndicator(false);
                     mRequestView.showLoadingError();
+                    mRequestView.toggleRetryOption(true);
                 }
             });
 
@@ -63,5 +68,20 @@ public class ListPresenter implements Contracts.Presenter {
             mRequestView.setLoadingIndicator(false);
             mRequestView.showFacilitiesList(saved_facilities);
         }
+    }
+
+    @Override
+    public void requestOrderAZ() {
+
+    }
+
+    @Override
+    public void requestOrderZA() {
+
+    }
+
+    @Override
+    public void requestClosestFacility() {
+
     }
 }

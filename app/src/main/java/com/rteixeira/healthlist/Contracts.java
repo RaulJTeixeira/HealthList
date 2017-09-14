@@ -9,13 +9,14 @@ public interface Contracts {
 
     interface View {
 
-        String FACILITY_WORKLOAD = "facility";
+        String FACILITY_WORKLOAD_KEY = "facility";
 
         //general Setup
         void setPresenter(Presenter presenter);
 
         //General UI behavior
         void setLoadingIndicator(boolean active);
+        void toggleRetryOption(boolean visible);
         void clearList();
 
         //Result Control
@@ -28,5 +29,8 @@ public interface Contracts {
 
     interface Presenter {
         void requestFacilities();
+        void requestOrderAZ();
+        void requestOrderZA();
+        void requestClosestFacility();
     }
 }

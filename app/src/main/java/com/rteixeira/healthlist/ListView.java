@@ -33,6 +33,10 @@ public class ListView extends AppCompatActivity implements Contracts.View {
     private ProgressBar mLoader;
     private android.widget.ListView mListView;
 
+    private Menu menuController;
+
+    private boolean showRetryButton = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,7 +56,7 @@ public class ListView extends AppCompatActivity implements Contracts.View {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent(ListView.this, DetailView.class);
                 Bundle bundle = new Bundle();
-                bundle.putParcelable(FACILITY_WORKLOAD, mFacilitiesAdapter.getItem(position));
+                bundle.putParcelable(FACILITY_WORKLOAD_KEY, mFacilitiesAdapter.getItem(position));
                 intent.putExtras(bundle);
                 startActivity(intent);
             }
@@ -69,6 +73,8 @@ public class ListView extends AppCompatActivity implements Contracts.View {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_list_view, menu);
+        menu.findItem(R.id.action_retry).setVisible(showRetryButton);
+
         return true;
     }
 
@@ -76,8 +82,18 @@ public class ListView extends AppCompatActivity implements Contracts.View {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        if (id == R.id.action_settings) {
-            return true;
+        switch (id) {
+            case R.id.action_retry:
+                mPresenter.requestFacilities();
+                break;
+            case R.id.action_orderAZ:
+                mPresenter.requestOrderAZ();
+                break;
+            case R.id.action_orderZA:
+                mPresenter.requestOrderZA();
+                break;
+            case R.id.action_getClosest:
+                mPresenter.requestClosestFacility();
         }
 
         return super.onOptionsItemSelected(item);
@@ -99,6 +115,12 @@ public class ListView extends AppCompatActivity implements Contracts.View {
     }
 
     @Override
+    public void toggleRetryOption(boolean visible) {
+        showRetryButton = visible;
+        invalidateOptionsMenu();
+    }
+
+    @Override
     public void clearList() {
         mFacilitiesAdapter.setList(new ArrayList<Facility>());
         mFacilitiesAdapter.notifyDataSetChanged();
@@ -108,22 +130,22 @@ public class ListView extends AppCompatActivity implements Contracts.View {
     public void showLoadingError() {
         Snackbar.make(mListView, R.string.failed_to_load,
                 Snackbar.LENGTH_LONG).setAction(R.string.retry, new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        mPresenter.requestFacilities();
-                    }
-                }).show();
+            @Override
+            public void onClick(View v) {
+                mPresenter.requestFacilities();
+            }
+        }).show();
     }
 
     @Override
     public void showOfflineNotification() {
         Snackbar.make(mListView, "Failed to load content Online, used offline source.",
                 Snackbar.LENGTH_LONG).setAction(R.string.retry, new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        mPresenter.requestFacilities();
-                    }
-                }).show();
+            @Override
+            public void onClick(View v) {
+                mPresenter.requestFacilities();
+            }
+        }).show();
     }
 
     @Override
@@ -186,9 +208,20 @@ public class ListView extends AppCompatActivity implements Contracts.View {
             final Facility mFacility = getItem(position);
             viewHolder.facility_name.setText(mFacility.getOrganisationName());
             viewHolder.facility_type.setText(mFacility.getOrganisationType());
-            viewHolder.facility_city.setText(String.format(Locale.getDefault(),"%s, %s",
-                    mFacility.getCounty(), mFacility.getCity()));
 
+            if (mFacility.getCounty().isEmpty()) {
+                if (!mFacility.getCity().isEmpty()) {
+                    viewHolder.facility_city.setText(mFacility.getCity());
+                }
+            } else {
+
+                if (mFacility.getCity().isEmpty()) {
+                    viewHolder.facility_city.setText(mFacility.getCounty());
+                } else {
+                    viewHolder.facility_city.setText(String.format(Locale.getDefault(), "%s, %s",
+                            mFacility.getCounty(), mFacility.getCity()));
+                }
+            }
             return convertView;
         }
     }

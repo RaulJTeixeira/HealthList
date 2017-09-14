@@ -25,7 +25,12 @@
         <activity
             android:name=".DetailView"
             android:label="@string/title_activity_detail_view"
-            android:theme="@style/AppTheme.NoActionBar"/>
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ListView" />
+
+            </activity>
     </application>
 
 </manifest>
