@@ -1,6 +1,7 @@
 package com.rteixeira.healthlist;
 
 import android.content.Context;
+import android.location.Location;
 
 import com.rteixeira.healthlist.data.model.Facility;
 import java.util.ArrayList;
@@ -16,13 +17,14 @@ public interface Contracts {
 
         //General UI behavior
         void setLoadingIndicator(boolean active);
-        void toggleRetryOption(boolean visible);
+        void controlOptionButtons(boolean retryVisible, boolean controlOptionButtons);
         void clearList();
 
         //Result Control
         void showLoadingError();
         void showOfflineNotification();
         void showFacilitiesList(ArrayList<Facility> facilities);
+        void showFacilityDetail(Facility facility);
 
         Context getContext();
     }
@@ -31,6 +33,6 @@ public interface Contracts {
         void requestFacilities();
         void requestOrderAZ();
         void requestOrderZA();
-        void requestClosestFacility();
+        void requestClosestFacility(Location location);
     }
 }

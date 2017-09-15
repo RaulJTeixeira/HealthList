@@ -1,9 +1,15 @@
 package com.rteixeira.healthlist;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
@@ -27,15 +33,17 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class ListView extends AppCompatActivity implements Contracts.View {
 
+    private static final int REQUEST_NETWORK_LOCATION = 0x01;
     private FacilityAdapter mFacilitiesAdapter;
     private Contracts.Presenter mPresenter;
 
     private ProgressBar mLoader;
     private android.widget.ListView mListView;
 
-    private Menu menuController;
-
     private boolean showRetryButton = false;
+    private boolean showFilterButtons = false;
+
+    private LocationManager mLocationManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +70,9 @@ public class ListView extends AppCompatActivity implements Contracts.View {
             }
         });
 
+
+        mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+
     }
 
     @Override
@@ -74,6 +85,9 @@ public class ListView extends AppCompatActivity implements Contracts.View {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_list_view, menu);
         menu.findItem(R.id.action_retry).setVisible(showRetryButton);
+        menu.findItem(R.id.action_orderAZ).setVisible(showFilterButtons);
+        menu.findItem(R.id.action_orderZA).setVisible(showFilterButtons);
+        menu.findItem(R.id.action_getClosest).setVisible(showFilterButtons);
 
         return true;
     }
@@ -93,11 +107,49 @@ public class ListView extends AppCompatActivity implements Contracts.View {
                 mPresenter.requestOrderZA();
                 break;
             case R.id.action_getClosest:
-                mPresenter.requestClosestFacility();
+                handleLocationRequest();
+                break;
         }
 
         return super.onOptionsItemSelected(item);
     }
+
+    private void handleLocationRequest() {
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_NETWORK_LOCATION);
+        } else {
+            clearList();
+            setLoadingIndicator(true);
+            controlOptionButtons(false, false);
+            mLocationManager.requestSingleUpdate(LocationManager.GPS_PROVIDER, mLocationListener, null);
+        }
+    }
+
+
+    LocationListener mLocationListener = new LocationListener() {
+        @Override
+        public void onLocationChanged(Location location) {
+            mPresenter.requestClosestFacility(location);
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) {
+
+        }
+    };
 
     @Override
     public Context getContext() {
@@ -115,8 +167,9 @@ public class ListView extends AppCompatActivity implements Contracts.View {
     }
 
     @Override
-    public void toggleRetryOption(boolean visible) {
-        showRetryButton = visible;
+    public void controlOptionButtons(boolean retyrVisible, boolean filterVisible) {
+        showRetryButton = retyrVisible;
+        showFilterButtons = filterVisible;
         invalidateOptionsMenu();
     }
 
@@ -139,7 +192,7 @@ public class ListView extends AppCompatActivity implements Contracts.View {
 
     @Override
     public void showOfflineNotification() {
-        Snackbar.make(mListView, "Failed to load content Online, used offline source.",
+        Snackbar.make(mListView, R.string.network_error,
                 Snackbar.LENGTH_LONG).setAction(R.string.retry, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -152,6 +205,34 @@ public class ListView extends AppCompatActivity implements Contracts.View {
     public void showFacilitiesList(ArrayList<Facility> facilities) {
         mFacilitiesAdapter.setList(facilities);
         mFacilitiesAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void showFacilityDetail(Facility facility) {
+        Intent intent = new Intent(ListView.this, DetailView.class);
+        Bundle bundle = new Bundle();
+        bundle.putParcelable(FACILITY_WORKLOAD_KEY, facility);
+        intent.putExtras(bundle);
+        startActivity(intent);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_NETWORK_LOCATION: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    handleLocationRequest();
+                } else {
+                    Snackbar.make(mListView, R.string.location_request_error,
+                            Snackbar.LENGTH_LONG).setAction(R.string.retry, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            handleLocationRequest();
+                        }
+                    }).show();
+                }
+            }
+        }
     }
 
     private class FacilityAdapter extends BaseAdapter {

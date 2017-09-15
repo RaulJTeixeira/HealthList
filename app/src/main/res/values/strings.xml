@@ -9,4 +9,9 @@
     <string name="send_e_mail">Send E-mail</string>
     <string name="open_website">Open Website</string>
     <string name="navigate">Navigate</string>
+    <string name="order_a_z">Order A-Z</string>
+    <string name="order_z_a">Order Z-A</string>
+    <string name="get_closest_facility">Get Closest Facility</string>
+    <string name="network_error">Failed to load content Online, used offline source.</string>
+    <string name="location_request_error">Can\'t calculate closest Facility without access to the cellphone location</string>
 </resources>
